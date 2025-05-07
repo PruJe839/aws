@@ -43,7 +43,7 @@ async function loadStations(url) {
         pointToLayer: function (feature, latlng) {
             return L.marker(latlng, {
                 icon: L.icon({
-                    iconUrl: "icons/anemometer.png",
+                    iconUrl: "icons/wifi.png",
                     iconSize: [32, 37],
                     iconAnchor: [16, 37],
                     popupAnchor: [0, -37]
@@ -51,10 +51,8 @@ async function loadStations(url) {
             });
         },
         onEachFeature: function (feature, layer) {
-            let name = feature.properties.name;
-            let elevation = feature.properties.elevation;
             layer.bindPopup(`
-                <h4><img src="icons/wifi.png"> ${name} (${elevation} m)</h4>
+                <h4>${feature.properties.name} (${feature.geometry.coordinates[2]}m)</h4>
             `);
         }
     }).addTo(overlays.stations);
