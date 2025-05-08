@@ -14,7 +14,8 @@ let map = L.map("map").setView([ibk.lat, ibk.lng], ibk.zoom);
 // thematische Layer
 let overlays = {
     stations: L.featureGroup(),
-    temprature: L.featureGroup().addTo(map),
+    wind: L.featureGroup().addTo(map),
+    temprature: L.featureGroup(),
 }
 
 // Layer control
@@ -29,6 +30,7 @@ L.control.layers({
 }, {
     "Wetterstationen": overlays.stations,
     "Temperatur": overlays.temprature,
+    "Windgeschwindigkeit": overlays.wind, 
 }).addTo(map);
 
 // Maßstab
@@ -69,9 +71,12 @@ async function loadStations(url) {
         }
     }).addTo(overlays.stations);
     showTemperature(jsondata);
+    showWind(jsondata);
 };
 
 loadStations("https://static.avalanche.report/weather_stations/stations.geojson");
+
+//Temperatur 
 
 function showTemperature(jsondata) {
     L.geoJSON(jsondata, {
@@ -85,7 +90,7 @@ function showTemperature(jsondata) {
             return L.marker(latlng, {
                 icon: L.divIcon({
                     className: "aws-div-icon",
-                    html: `<span style="background-color:${color}">${feature.properties.LT}</span>`
+                    html: `<span style="background-color:${color}">${feature.properties.LT.toFixed(1)}</span>`
                 })
             })
         }
@@ -100,5 +105,37 @@ function getColor(value, ramp) {
         }
     }
 }
-let testColor = getColor (-3, COLORS.temprature);
-console.log("TestColor fuer temp -3" , testColor);
+//let testColor = getColor (-3, COLORS.temprature);
+//console.log("TestColor fuer temp -3" , testColor);
+
+//Wind 
+
+function showWind(jsondata) {
+    L.geoJSON(jsondata, {
+        filter: function (feature) {
+            if (feature.properties.WG >=0 && feature.properties.WG < 1000) {
+                return true;
+            }
+        },
+        pointToLayer: function (feature, latlng) {
+            let color = getColor(feature.properties.WG, COLORS.wind);
+            return L.marker(latlng, {
+                icon: L.divIcon({
+                    className: "aws-div-wind",
+                    html: `<span style="background-color:${color}">${feature.properties.WG.toFixed(1)}</span>`
+                })
+            })
+        }
+    }).addTo(overlays.wind);
+}
+
+console.log(COLORS); 
+function getColor(value, ramp) {
+    for (let rule of ramp){
+        if (value >= rule.min && value < rule.max) {
+            return rule.color; 
+        }
+    }
+}
+//let testColor = getColor (-3, COLORS.wind);
+//console.log("TestColor fuer temp -3" , testColor);
