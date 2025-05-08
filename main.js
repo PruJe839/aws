@@ -13,8 +13,8 @@ let map = L.map("map").setView([ibk.lat, ibk.lng], ibk.zoom);
 
 // thematische Layer
 let overlays = {
-    stations: L.featureGroup().addTo(map),
-    temperatur: L.featureGroup(),
+    stations: L.featureGroup(),
+    temperatur: L.featureGroup().addTo(map),
 
 }
 
@@ -29,7 +29,7 @@ L.control.layers({
     "Esri WorldImagery": L.tileLayer.provider("Esri.WorldImagery"),
 }, {
     "Wetterstationen": overlays.stations,
-    "Temperatur": overlays.temperatur, 
+    "Temperatur": overlays.temperatur,
 }).addTo(map);
 
 // Maßstab
@@ -69,21 +69,26 @@ async function loadStations(url) {
             `);
         }
     }).addTo(overlays.stations);
-    showTemperature(jsondata); 
+    showTemperature(jsondata);
 };
 
-loadStations("https://static.avalanche.report/weather_stations/stations.geojson"); 
+loadStations("https://static.avalanche.report/weather_stations/stations.geojson");
 
-function showTemperature(jsondata){
-    L.geoJSON(jsondata,{
-        pointToLayer: function(feature, latlng) {
-            return L.marker (latlng, {
-                icon: L.divIcon ({
+function showTemperature(jsondata) {
+    L.geoJSON(jsondata, {
+        filter: function (feature) {
+            if (feature.properties.LT > -50 && feature.properties.LT < 50) {
+                return true;
+            }
+        },
+        pointToLayer: function (feature, latlng) {
+            return L.marker(latlng, {
+                icon: L.divIcon({
                     className: "aws-div-icon",
                     html: `<span>${feature.properties.LT}</span>`
 
                 })
-            })            
+            })
         }
     }).addTo(overlays.temperatur);
 }
