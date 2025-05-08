@@ -14,8 +14,7 @@ let map = L.map("map").setView([ibk.lat, ibk.lng], ibk.zoom);
 // thematische Layer
 let overlays = {
     stations: L.featureGroup(),
-    temperatur: L.featureGroup().addTo(map),
-
+    temprature: L.featureGroup().addTo(map),
 }
 
 // Layer control
@@ -29,7 +28,7 @@ L.control.layers({
     "Esri WorldImagery": L.tileLayer.provider("Esri.WorldImagery"),
 }, {
     "Wetterstationen": overlays.stations,
-    "Temperatur": overlays.temperatur,
+    "Temperatur": overlays.temprature,
 }).addTo(map);
 
 // Maßstab
@@ -82,13 +81,24 @@ function showTemperature(jsondata) {
             }
         },
         pointToLayer: function (feature, latlng) {
+            let color = getColor(feature.properties.LT, COLORS.temprature);
             return L.marker(latlng, {
                 icon: L.divIcon({
                     className: "aws-div-icon",
-                    html: `<span>${feature.properties.LT}</span>`
-
+                    html: `<span style="background-color:${color}">${feature.properties.LT}</span>`
                 })
             })
         }
-    }).addTo(overlays.temperatur);
+    }).addTo(overlays.temprature);
 }
+
+console.log(COLORS); 
+function getColor(value, ramp) {
+    for (let rule of ramp){
+        if (value >= rule.min && value < rule.max) {
+            return rule.color; 
+        }
+    }
+}
+let testColor = getColor (-3, COLORS.temprature);
+console.log("TestColor fuer temp -3" , testColor);
