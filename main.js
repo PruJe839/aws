@@ -16,6 +16,7 @@ let overlays = {
     stations: L.featureGroup(),
     wind: L.featureGroup().addTo(map),
     temprature: L.featureGroup(),
+    snow: L.featureGroup(),
 }
 
 // Layer control
@@ -30,7 +31,8 @@ L.control.layers({
 }, {
     "Wetterstationen": overlays.stations,
     "Temperatur": overlays.temprature,
-    "Windgeschwindigkeit": overlays.wind, 
+    "Windgeschwindigkeit": overlays.wind,
+    "Schneehöhen": overlays.snow, 
 }).addTo(map);
 
 // Maßstab
@@ -72,6 +74,7 @@ async function loadStations(url) {
     }).addTo(overlays.stations);
     showTemperature(jsondata);
     showWind(jsondata);
+    showSnow(jsondata);
 };
 
 loadStations("https://static.avalanche.report/weather_stations/stations.geojson");
@@ -139,3 +142,33 @@ function getColor(value, ramp) {
 }
 //let testColor = getColor (-3, COLORS.wind);
 //console.log("TestColor fuer temp -3" , testColor);
+
+//Snow 
+
+function showSnow(jsondata) {
+    L.geoJSON(jsondata, {
+        filter: function (feature) {
+            if (feature.properties.HS >=0 && feature.properties.HS < 1000) {
+                return true;
+            }
+        },
+        pointToLayer: function (feature, latlng) {
+            let color = getColor(feature.properties.HS, COLORS.snow);
+            return L.marker(latlng, {
+                icon: L.divIcon({
+                    className: "aws-div-snow",
+                    html: `<span style="background-color:${color}">${feature.properties.HS.toFixed(1)}</span>`
+                })
+            })
+        }
+    }).addTo(overlays.snow);
+}
+
+console.log(COLORS); 
+function getColor(value, ramp) {
+    for (let rule of ramp){
+        if (value >= rule.min && value < rule.max) {
+            return rule.color; 
+        }
+    }
+}
