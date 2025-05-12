@@ -14,9 +14,10 @@ let map = L.map("map").setView([ibk.lat, ibk.lng], ibk.zoom);
 // thematische Layer
 let overlays = {
     stations: L.featureGroup(),
-    wind: L.featureGroup().addTo(map),
+    wind: L.featureGroup(),
     temprature: L.featureGroup(),
     snow: L.featureGroup(),
+    direction: L.featureGroup().addTo(map), 
 }
 
 // Layer control
@@ -33,6 +34,7 @@ L.control.layers({
     "Temperatur": overlays.temprature,
     "Windgeschwindigkeit": overlays.wind,
     "Schneehöhen": overlays.snow, 
+    "Windrichtung und Windgeschwindigkeit": overlays.direction, 
 }).addTo(map);
 
 // Maßstab
@@ -75,6 +77,7 @@ async function loadStations(url) {
     showTemperature(jsondata);
     showWind(jsondata);
     showSnow(jsondata);
+    showDirection(jsondata);
 };
 
 loadStations("https://static.avalanche.report/weather_stations/stations.geojson");
@@ -172,3 +175,47 @@ function getColor(value, ramp) {
         }
     }
 }
+
+//Windrichtung und Windgeschwindigkeit 
+
+function degreesToCardinal(degree) {
+    const directions = ['N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW'];
+    const index = Math.round(degree / 45) % 8;
+    return directions[index];
+};
+
+function showDirection(jsondata) {
+    L.geoJSON(jsondata, {
+        filter: function (feature) {
+            if (feature.properties.WG >=0 && feature.properties.WG < 1000) {
+                return true;
+            }
+        },
+        pointToLayer: function (feature, latlng) {
+            const speed = feature.properties.WG;
+            const direction = degreesToCardinal (feature.properties.WR);
+            const color = getColor(speed, COLORS.wind) || "grey"; 
+            return L.marker(latlng, {
+                icon: L.divIcon({
+                    className: "aws-div-icon",
+                    html: `<span style="background-color:${color}">${direction}</span>`
+                })
+            })
+        }
+    }).addTo(overlays.direction);
+} 
+
+
+// Rainviewer 
+
+    // Change default options
+    L.control.rainviewer({ 
+        position: 'bottomleft',
+        nextButtonText: '>',
+        playStopButtonText: 'Play/Stop',
+        prevButtonText: '<',
+        positionSliderLabelText: "Hour:",
+        opacitySliderLabelText: "Opacity:",
+        animationInterval: 500,
+        opacity: 0.5
+    }).addTo(map); 
