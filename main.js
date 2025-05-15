@@ -187,7 +187,7 @@ function degreesToCardinal(degree) {
 function showDirection(jsondata) {
     L.geoJSON(jsondata, {
         filter: function (feature) {
-            if (feature.properties.WG >=0 && feature.properties.WG < 1000) {
+            if (feature.properties.WR >=0 && feature.properties.WR < 1000) {
                 return true;
             }
         },
