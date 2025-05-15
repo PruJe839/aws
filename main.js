@@ -194,12 +194,12 @@ function showDirection(jsondata) {
         },
         pointToLayer: function (feature, latlng) {
             const speed = feature.properties.WG;
-            const direction = degreesToCardinal (feature.properties.WR);
+           const direction = degreesToCardinal (feature.properties.WR);
             const color = getColor(speed, COLORS.wind) || "grey"; 
             return L.marker(latlng, {
                 icon: L.divIcon({
-                    className: "aws-div-icon",
-                    html: `<span style="background-color:${color}">${direction}</span>`
+                    className: "aws-div-wind",
+                    html: `<span><i style="transform:rotate(${feature.properties.WR}deg);color:${color}" class="fa-solid fa-circle-arrow-down"></i></span>`
                 })
             })
         }
